@@ -64,7 +64,6 @@ def reading_in_tifs_not_lazy(glob_pat, channel_names=None):
     from skimage import io
 
     df_filenames = determine_tif_structure(glob_pat, channel_names=channel_names)
-    # [1,1] is for the x and y axis
     arrays = np.empty(
         df_filenames.nunique()[
             ["c_index", "day", "w_index", "p_index", "t_index", "z_index"]
@@ -73,7 +72,6 @@ def reading_in_tifs_not_lazy(glob_pat, channel_names=None):
         dtype='uint16',
     )
     for row in df_filenames.iterrows():
-#         print(type(row[1]["c_index"]))
         arrays[
             row[1]["c_index"],
             row[1]["day"],
@@ -86,3 +84,35 @@ def reading_in_tifs_not_lazy(glob_pat, channel_names=None):
         ] = io.imread(row[1]['file_paths'])
     
     return arrays
+
+def reading_in_tifs_lazy(glob_pat, channel_names=None):
+    import numpy as np
+    from skimage import io
+    from dask import delayed
+    import dask.array as da
+
+    df_filenames = determine_tif_structure(glob_pat, channel_names=channel_names)
+    # [1,1] is for the x and y axis
+    arrays = np.empty(
+        df_filenames.nunique()[
+            ["c_index", "day", "w_index", "p_index"]
+        ].tolist()
+        + [1, 1],
+        dtype='object',
+    )
+    for row in df_filenames.iterrows():
+        lazy_array = delayed(io.imread)(
+            row[1]['file_paths']
+        )
+
+        arrays[
+            row[1]["c_index"],
+            row[1]["day"],
+            row[1]["w_index"],
+            row[1]["p_index"],
+            0,
+            0,
+        ] = da.from_delayed(lazy_array, shape=(2048, 2048), dtype="uint16")
+    
+    dask_array = da.block(arrays.tolist())
+    return dask_array
