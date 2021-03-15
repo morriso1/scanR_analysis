@@ -59,32 +59,6 @@ def determine_tif_structure(glob_pat, channel_names=None):
 
     return df_filenames
 
-def reading_in_tifs_not_lazy(glob_pat, channel_names=None):
-    import numpy as np
-    from skimage import io
-
-    df_filenames = determine_tif_structure(glob_pat, channel_names=channel_names)
-    arrays = np.empty(
-        df_filenames.nunique()[
-            ["c_index", "day", "w_index", "p_index", "t_index", "z_index"]
-        ].tolist()
-        + [2048, 2048],
-        dtype='uint16',
-    )
-    for row in df_filenames.iterrows():
-        arrays[
-            row[1]["c_index"],
-            row[1]["day"],
-            row[1]["w_index"],
-            row[1]["p_index"],
-            row[1]["t_index"],
-            row[1]["z_index"],
-            :,
-            :,
-        ] = io.imread(row[1]['file_paths'])
-    
-    return arrays
-
 def reading_in_tifs_lazy(glob_pat, channel_names=None):
     import numpy as np
     from skimage import io
