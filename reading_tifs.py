@@ -4,7 +4,7 @@ def determine_tif_structure(glob_pat, channel_names=None):
     from glob import glob
     
     if channel_names == None:
-        channel_names = ["DAPI", "GFP", "mCherry2", "A647"]
+        channel_names = ["DAPI", "GFP", "mCherry2", "Alexa 647"]
     filenames = sorted(glob(os.path.join(glob_pat)))
     df_filenames = pd.DataFrame({"file_paths": filenames})
     df_filenames["day"] = (
