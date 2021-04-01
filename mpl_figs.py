@@ -1,39 +1,53 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import napari
+import dask.array as da
 
-def blended_img(viewer):
-    blended = np.zeros(viewer.layers[0].data.shape + (4,))
+
+def blended_img(viewer, index=(Ellipsis), use_viewer_clims = True, percentile_clim=False, contrast_limits=(2, 99.5)):
+    """contrast limit: 'viewer' to use napari viewer sliders"""
+    blended = np.zeros(viewer.layers[0].data[index].shape + (4,))
+    colormapped_list = list()
     for layer in viewer.layers:
+        img = layer.data[index]
+        if isinstance(img, da.core.Array):
+            img = img.compute()
+
         # normalize data by clims
-        normalized_data = (layer.data - layer.contrast_limits[0]) / (
-        layer.contrast_limits[1] - layer.contrast_limits[0]
-    )
+        if use_viewer_clims is True and percentile_clim is False:
+            normalized_data = (img - layer.contrast_limits[0]) / (
+            layer.contrast_limits[1] - layer.contrast_limits[0]
+        )
+
+        if percentile_clim is True:
+            if img.max() == 0:
+                normalized_data = img 
+            else:
+                normalized_data = (img - np.percentile(img.ravel(), contrast_limits[0])) / (
+                np.percentile(img.ravel(), contrast_limits[1]) - np.percentile(img.ravel(), contrast_limits[0]
+        ))
         colormapped_data = layer.colormap.map(normalized_data.flatten())
         colormapped_data = colormapped_data.reshape(normalized_data.shape + (4,))
-
+        colormapped_list.append(colormapped_data)
         blended = blended + colormapped_data
-    
+
     blended[..., 3] = 1
 
-    return blended
+    colormapped_list.append(blended)
+    return colormapped_list
 
-def create_matplotlib_figure(viewer, index, title_list):
-    fig, ax = plt.subplots(nrows=viewer.layers[0].data.shape, ncols=len(viewer.layers), figsize=(12, 15))
 
-    for i, (layer, title_list) in enumerate(zip(viewer.layers, title_list)):
-        for ii in range(layer.data.shape[0]):
-            img = layer.data[ii, index[0], index[1], index[2], :, :].compute()
-            ax[i, ii].imshow(
-                img,
-                vmin=np.percentile(img.ravel(), 2),
-                vmax=np.percentile(img.ravel(), 99.5), cmap='blue'
-            )
-            ax[i, ii].axis("off")
-            ax[i, ii].set_title(title_list[ii])
-    ax[0, 3].axis("off")
-    ax[1, 3].axis("off")
-    ax[2, 3].axis("off")
-    plt.tight_layout()
-#     fig.suptitle('Day 3 - BMP (50 ng/ml)', y=14)
-#   # fig.savefig(save_path, dpi=300)
+def create_matplotlib_figure_alt(viewer, title_tup, index, **kwargs):
+    title_list = [title + ("composite",) for title in title_tup]
+    days_of_stainings = viewer.layers[0].data.shape[0]
+
+    fig, ax = plt.subplots(
+        nrows=days_of_stainings, ncols=len(viewer.layers) + 1, figsize=(12, 15)
+    )
+
+    for day in range(days_of_stainings):
+        img_list = mpl_figs.blended_img(viewer, (day,) + index, **kwargs)
+        for i, img in enumerate(img_list):
+            ax[day, i].imshow(img)
+            ax[day, i].axis("off")
+            ax[day, i].set_title(title_list[day][i])
