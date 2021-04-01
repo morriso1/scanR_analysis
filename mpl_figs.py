@@ -5,7 +5,7 @@ import dask.array as da
 
 
 def blended_img(viewer, index=(Ellipsis), use_viewer_clims = True, percentile_clim=False, contrast_limits=(2, 99.5)):
-    """contrast limit: 'viewer' to use napari viewer sliders"""
+    """insert doc string"""
     blended = np.zeros(viewer.layers[0].data[index].shape + (4,))
     colormapped_list = list()
     for layer in viewer.layers:
