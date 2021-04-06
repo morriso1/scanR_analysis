@@ -37,7 +37,7 @@ def blended_img(viewer, index=(Ellipsis), use_viewer_clims = True, percentile_cl
     return colormapped_list
 
 
-def create_matplotlib_figure_alt(viewer, title_tup, index, **kwargs):
+def create_matplotlib_figure(viewer, title_tup, index, **kwargs):
     title_list = [title + ("composite",) for title in title_tup]
     days_of_stainings = viewer.layers[0].data.shape[0]
 
@@ -46,7 +46,7 @@ def create_matplotlib_figure_alt(viewer, title_tup, index, **kwargs):
     )
 
     for day in range(days_of_stainings):
-        img_list = mpl_figs.blended_img(viewer, (day,) + index, **kwargs)
+        img_list = blended_img(viewer, (day,) + index, **kwargs)
         for i, img in enumerate(img_list):
             ax[day, i].imshow(img)
             ax[day, i].axis("off")
