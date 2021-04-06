@@ -3,12 +3,17 @@ import numpy as np
 import napari
 import dask.array as da
 
-
-def blended_img(viewer, index=(Ellipsis), use_viewer_clims = True, percentile_clim=False, contrast_limits=(2, 99.5)):
+def blended_img(
+    viewer,
+    index=(Ellipsis),
+    use_viewer_clims=True,
+    percentile_clim=False,
+    contrast_limits=(2, 99.5),
+):
     """insert doc string"""
     blended = np.zeros(viewer.layers[0].data[index].shape + (4,))
     colormapped_list = list()
-    for layer in viewer.layers:
+    for i, layer in enumerate(viewer.layers):
         img = layer.data[index]
         if isinstance(img, da.core.Array):
             img = img.compute()
@@ -16,16 +21,25 @@ def blended_img(viewer, index=(Ellipsis), use_viewer_clims = True, percentile_cl
         # normalize data by clims
         if use_viewer_clims is True and percentile_clim is False:
             normalized_data = (img - layer.contrast_limits[0]) / (
-            layer.contrast_limits[1] - layer.contrast_limits[0]
-        )
+                layer.contrast_limits[1] - layer.contrast_limits[0]
+            )
 
         if percentile_clim is True:
             if img.max() == 0:
-                normalized_data = img 
+                normalized_data = img
             else:
-                normalized_data = (img - np.percentile(img.ravel(), contrast_limits[0])) / (
-                np.percentile(img.ravel(), contrast_limits[1]) - np.percentile(img.ravel(), contrast_limits[0]
-        ))
+                normalized_data = (
+                    img - np.percentile(img.ravel(), contrast_limits[0])
+                ) / (
+                    np.percentile(img.ravel(), contrast_limits[1])
+                    - np.percentile(img.ravel(), contrast_limits[0])
+                )
+
+        if not all((use_viewer_clims, percentile_clim)):
+            normalized_data = (img - contrast_limits[i][0]) / (
+                contrast_limits[i][1] - contrast_limits[i][0]
+            )
+
         colormapped_data = layer.colormap.map(normalized_data.flatten())
         colormapped_data = colormapped_data.reshape(normalized_data.shape + (4,))
         colormapped_list.append(colormapped_data)
@@ -37,8 +51,8 @@ def blended_img(viewer, index=(Ellipsis), use_viewer_clims = True, percentile_cl
     return colormapped_list
 
 
-def create_matplotlib_figure(viewer, title_tup, index, **kwargs):
-    title_list = [title + ("composite",) for title in title_tup]
+def create_matplotlib_figure(viewer, titles, index, **kwargs):
+    title_list = [title + ("composite",) for title in titles]
     days_of_stainings = viewer.layers[0].data.shape[0]
 
     fig, ax = plt.subplots(
@@ -51,3 +65,5 @@ def create_matplotlib_figure(viewer, title_tup, index, **kwargs):
             ax[day, i].imshow(img)
             ax[day, i].axis("off")
             ax[day, i].set_title(title_list[day][i])
+
+    return fig, ax
