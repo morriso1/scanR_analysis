@@ -3,6 +3,7 @@ import numpy as np
 import napari
 import dask.array as da
 
+
 def blended_img(
     viewer,
     index=(Ellipsis),
@@ -51,19 +52,43 @@ def blended_img(
     return colormapped_list
 
 
-def create_matplotlib_figure(viewer, titles, index, **kwargs):
-    title_list = [title + ("composite",) for title in titles]
+def create_matplotlib_figure(viewer, image_titles, row_titles, index, **kwargs):
+    title_list = [title + ("composite",) for title in image_titles]
     days_of_stainings = viewer.layers[0].data.shape[0]
 
     fig, ax = plt.subplots(
-        nrows=days_of_stainings, ncols=len(viewer.layers) + 1, figsize=(12, 15)
+        nrows=days_of_stainings, ncols=len(viewer.layers) + 1, figsize=(8, 10)
     )
 
     for day in range(days_of_stainings):
         img_list = blended_img(viewer, (day,) + index, **kwargs)
         for i, img in enumerate(img_list):
             ax[day, i].imshow(img)
-            ax[day, i].axis("off")
+            ax[day, i].xaxis.set_visible(False)
+            plt.setp(ax[day, i].spines.values(), visible=False)
+            ax[day, i].tick_params(left=False, labelleft=False)
+            if i == 0:
+                ax[day, i].set_ylabel(f"{row_titles[day]}")
+                ax[day, i].yaxis.label.set_color("white")
             ax[day, i].set_title(title_list[day][i])
 
     return fig, ax
+
+
+def create_matrix_zigzag_row(rowCount, colCount, dataList):
+    mat = []
+    for rows in range(rowCount):
+        rowList = []
+        if rows % 2 == 0:
+            for cols in range(colCount):
+                index = colCount * rows + cols
+                print("even", index)
+                rowList.append(dataList[index])
+            mat.append(rowList)
+        if rows % 2 == 1:
+            for cols in range(colCount - 1, -1, -1):
+                index = colCount * rows + cols
+                print("odd", index)
+                rowList.append(dataList[index])
+            mat.append(rowList)
+    return mat
