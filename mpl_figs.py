@@ -60,7 +60,7 @@ def blended_img(
     return colormapped_list, clims_used
 
 
-def create_matplotlib_figure(
+def create_matplotlib_figure_4i_over_days_of_stainings(
     viewer, image_titles, row_titles, index, defined_clims=None, **kwargs
 ):
     title_list = [title + ("composite",) for title in image_titles]
@@ -91,3 +91,22 @@ def create_matplotlib_figure(
             ax[day, i].set_title(title_list[day][i])
 
     return fig, ax, clim_list
+
+
+def plot_img_lists(img_list, title_list, channel_list, figsize=(8, 12)):
+    fig, ax = plt.subplots(nrows=len(img_list), ncols=len(img_list[0]), figsize=figsize)
+
+    for i, (img_channels, title) in enumerate(zip(img_list, title_list)):
+        for ii, (img, channel) in enumerate(zip(img_channels, channel_list)):
+            ax[i, ii].imshow(img)
+            ax[i, ii].set_title(channel)
+            ax[i, ii].xaxis.set_visible(False)
+            plt.setp(ax[i, ii].spines.values(), visible=False)
+            ax[i, ii].tick_params(left=False, labelleft=False)
+            if ii == 0:
+                ax[i, ii].set_ylabel(title)
+                ax[i, ii].yaxis.label.set_color("black")
+
+    plt.subplots_adjust(hspace=0.2, wspace=0.01)
+
+    return fig, ax
