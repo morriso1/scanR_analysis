@@ -99,10 +99,11 @@ def plot_img_lists(img_list, title_list, channel_list, figsize=(8, 12)):
     for i, (img_channels, title) in enumerate(zip(img_list, title_list)):
         for ii, (img, channel) in enumerate(zip(img_channels, channel_list)):
             ax[i, ii].imshow(img)
-            ax[i, ii].set_title(channel)
             ax[i, ii].xaxis.set_visible(False)
             plt.setp(ax[i, ii].spines.values(), visible=False)
             ax[i, ii].tick_params(left=False, labelleft=False)
+            if i == 0:
+                ax[i, ii].set_title(channel)
             if ii == 0:
                 ax[i, ii].set_ylabel(title)
                 ax[i, ii].yaxis.label.set_color("black")
