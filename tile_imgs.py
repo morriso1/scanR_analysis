@@ -17,27 +17,30 @@ def create_matrix_zigzag_row(rowCount, colCount, dataList):
     return mat
 
 
-def spiral_cw(A):
+def spiral_ccw(A):
     import numpy as np
 
     A = np.array(A)
-    out = []
+    out = np.empty(0, dtype=np.int8)
     while A.size:
-        out.append(A[:, 0])  # take first column
-        A = A[:, 1:].T[:, ::-1]  # cut off first column and rotate counterclockwise
-    return np.concatenate(out)
+        out = np.concatenate((out, A[:, -1]))
+        A = A[
+            :,
+            :-1,
+        ].T[::-1]
+    return out
 
 
 def base_spiral(nrow, ncol):
     import numpy as np
 
-    return spiral_cw(np.arange(nrow * ncol).reshape(nrow, ncol))[::-1]
+    return spiral_ccw(np.arange(nrow * ncol).reshape(nrow, ncol))[::-1]
 
 
-def to_spiral(nrows, ncols):
+def to_spiral(nrow, ncol):
     import numpy as np
 
-    A = np.arange(nrows * ncols).reshape(nrows, ncols)
+    A = np.arange(nrow * ncol).reshape(nrow, ncol)
     B = np.empty_like(A)
     B.flat[base_spiral(*A.shape)] = A.flat
-    return np.flip(B, axis=1)
+    return B
