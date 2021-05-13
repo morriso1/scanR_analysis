@@ -17,7 +17,7 @@ def create_matrix_zigzag_row(rowCount, colCount, dataList):
     return mat
 
 
-def spiral_ccw(A):
+def spiral_ccw_even(A):
     import numpy as np
 
     A = np.array(A)
@@ -31,10 +31,29 @@ def spiral_ccw(A):
     return out
 
 
+def spiral_ccw_odd(A):
+    import numpy as np
+
+    A = np.array(A)
+    out = np.empty(0, dtype=np.int8)
+    while A.size:
+        out = np.concatenate((out, A[0]))
+        A = A[
+            1:,
+        ].T[::-1]
+    return out
+
+
 def base_spiral(nrow, ncol):
     import numpy as np
 
-    return spiral_ccw(np.arange(nrow * ncol).reshape(nrow, ncol))[::-1]
+    shape = nrow * ncol
+
+    if shape % 2 == 0:
+        return spiral_ccw_even(np.arange(nrow * ncol).reshape(nrow, ncol))[::-1]
+
+    if shape % 2 == 1:
+        return spiral_ccw_odd(np.arange(nrow * ncol).reshape(nrow, ncol))[::-1]
 
 
 def to_spiral(nrow, ncol):
