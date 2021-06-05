@@ -1,7 +1,14 @@
+import numpy as np
+from skimage import io
+from dask import delayed
+import dask.array as da
+from dask_image.imread import imread
+import pandas as pd
+import os
+from glob import glob
+
+
 def determine_tif_structure(glob_pat, channel_names=None):
-    import pandas as pd
-    import os
-    from glob import glob
 
     if channel_names == None:
         channel_names = ["DAPI", "GFP", "mCherry2", "Alexa 647"]
@@ -61,9 +68,6 @@ def determine_tif_structure(glob_pat, channel_names=None):
 
 
 def determine_tif_structure_with_genotype(glob_pat, genotypes, channel_names=None):
-    import pandas as pd
-    import os
-    from glob import glob
 
     if channel_names == None:
         channel_names = ["DAPI", "GFP", "mCherry2", "Alexa 647"]
@@ -135,12 +139,17 @@ def determine_tif_structure_with_genotype(glob_pat, genotypes, channel_names=Non
     return df_filenames
 
 
-def reading_in_tifs_lazy(df_filenames, indexes):
-    import numpy as np
-    from skimage import io
-    from dask import delayed
-    import dask.array as da
+def lazy_read_multichannel_img(
+    dir_path,
+    glob_for_each_channel=("*DAPI*.tif", "*GFP*.tif", "*mCherry*", "*647*.tif"),
+):
+    imgs = da.stack(
+        [imread(os.path.join(dir_path, globs)) for globs in glob_for_each_channel]
+    )
+    return imgs
 
+
+def reading_in_tifs_lazy_to_multidimensional(df_filenames, indexes):
     # [1,1] is for the x and y axis
     arrays = np.empty(
         tuple(df_filenames.nunique()[indexes].tolist() + [1, 1]),
