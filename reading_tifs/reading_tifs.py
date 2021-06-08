@@ -26,10 +26,14 @@ def determine_tif_structure(glob_pat, channel_names=None):
         .str.extract(r"(\d{5})")
         .astype(int)
     )
+
     num_unique = df_filenames.groupby("day_index").nunique()["well"][0]
+    unique_wells = df_filenames["well"].unique()
+    exchange_list = list(range(num_unique)) * (df_filenames["day_index"].nunique() + 1)
+    exchange_list = exchange_list[: len(unique_wells)]
     df_filenames["w_index"] = df_filenames["well"].replace(
-        df_filenames["well"].unique(),
-        list(range(num_unique)) * df_filenames["day_index"].nunique(),
+        unique_wells,
+        exchange_list,
     )
 
     df_filenames["p_index"] = (
@@ -63,6 +67,8 @@ def determine_tif_structure(glob_pat, channel_names=None):
     df_filenames["c_index"] = df_filenames["channel"].replace(
         channel_names, list(range(len(channel_names)))
     )
+    df_filenames["elution_control"] = df_filenames["file_paths"].str.contains("EL-")
+    df_filenames["not_this_round_ec"] = df_filenames["file_paths"].str.contains("ELntr")
 
     return df_filenames
 
