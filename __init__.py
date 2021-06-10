@@ -1,1 +1,1 @@
-from scanR_analysis import mpl_figs, reading_tifs, tile_imgs
+from scanR_analysis import mpl_figs, reading_tifs, tile_imgs, combine_and_select_imgs

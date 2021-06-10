@@ -67,7 +67,7 @@ def create_matplotlib_figure_4i_over_days_of_stainings(
     days_of_stainings = viewer.layers[0].data.shape[0]
 
     fig, ax = plt.subplots(
-        nrows=days_of_stainings, ncols=len(viewer.layers) + 1, figsize=(8, 10)
+        nrows=days_of_stainings, ncols=len(viewer.layers) + 1, figsize=(8, 12)
     )
     clim_list = list()
 

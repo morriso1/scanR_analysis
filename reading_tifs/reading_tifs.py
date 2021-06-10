@@ -69,6 +69,9 @@ def determine_tif_structure(glob_pat, channel_names=None):
     )
     df_filenames["elution_control"] = df_filenames["file_paths"].str.contains("EL-")
     df_filenames["not_this_round_ec"] = df_filenames["file_paths"].str.contains("ELntr")
+    df_filenames["stained_every_round"] = np.invert(
+        df_filenames["elution_control"] | df_filenames["not_this_round_ec"]
+    )
 
     return df_filenames
 
