@@ -8,7 +8,7 @@ import os
 from glob import glob
 
 
-def determine_tif_structure(glob_pat, channel_names=None):
+def determine_tif_structure(glob_pat, channel_names=None, elution_control_regex=r"EL"):
 
     if channel_names == None:
         channel_names = ["DAPI", "GFP", "mCherry2", "Alexa 647"]
@@ -67,12 +67,9 @@ def determine_tif_structure(glob_pat, channel_names=None):
     df_filenames["c_index"] = df_filenames["channel"].replace(
         channel_names, list(range(len(channel_names)))
     )
-    df_filenames["elution_control"] = df_filenames["file_paths"].str.contains("EL-")
-    df_filenames["not_this_round_ec"] = df_filenames["file_paths"].str.contains("ELntr")
     df_filenames["stained_every_round"] = np.invert(
-        df_filenames["elution_control"] | df_filenames["not_this_round_ec"]
+        df_filenames["file_paths"].str.contains(elution_control_regex)
     )
-
     return df_filenames
 
 
